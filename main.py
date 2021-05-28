@@ -4,11 +4,18 @@
 #      Program  główny      #
 # ************************* #
 
-import generator_logic
-import ui_frame
+import generator_logic as gl
+import ui_frame as ui
 
 if __name__ != '__main__':
     print("Don't import as module!")
     exit()
 
-print("Hello!")
+class MainApp:
+    def __init__(self):
+        self.ui = ui.AppFrame()
+    def start(self):
+        self.ui.mainloop()
+
+app = MainApp()
+app.start()
