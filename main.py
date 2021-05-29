@@ -13,9 +13,12 @@ if __name__ != '__main__':
 
 class MainApp:
     def __init__(self):
-        self.ui = ui.AppFrame()
+        self.ui = ui.AppFrame(self)
     def start(self):
         self.ui.mainloop()
+    def run_generator(self, x, y, ids):
+        self.gl = gl.Generator(self, x, y, self.ui.maze_grid.ids, self.ui.start_end)
+        self.gl.generate()
 
 app = MainApp()
 app.start()
