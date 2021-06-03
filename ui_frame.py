@@ -19,6 +19,7 @@ class AppFrame(tk.Frame):
         self.main = main
         self.master = master
         self.master.title("Generator labiryntów by AM")
+        self.pivot_cells = list()
         self.prepare_grid()
         self.prepare_menu()
         self.prepare_maze()
@@ -98,25 +99,32 @@ class AppFrame(tk.Frame):
         for i in range(1, x-1):
             for j in range(1, y-1):
                 self.maze_grid.addtag_withtag("inside", self.maze_grid.ids[i][j])
+                self.maze_grid.tag_bind(self.maze_grid.ids[i][j], "<Button-1>", self.pick_pivot_rect_handler)
+        for pivot in self.pivot_cells:
+            self.maze_grid.addtag_withtag("pivot", pivot)
+            self.maze_grid.tag_unbind(idr, "<Button-1>")
+            self.maze_grid.tag_bind(pivot, "<Button-1>", self.remove_pivot_rect_handler, False)
         self.maze_grid.pack()
 
     def prepare_btn_handler(self):
         x = int(self.xparam_entry.get())
         y = int(self.yparam_entry.get())
+        self.pivot_cells = list()
         self.maze_grid.destroy()
         self.prepare_maze(x, y)
         
     def generate_btn_handler(self):
         self.maze_grid.destroy()
         self.prepare_maze(self.maze_grid.x, self.maze_grid.y)
-        self.main.run_generator(self.maze_grid.x, self.maze_grid.y, self.maze_grid.ids)
+        self.main.run_generator(self.maze_grid.x, self.maze_grid.y, self.maze_grid.ids, self.pivot_cells.copy())
 
     def pick_start_rect_handler(self, event):
         idr = self.maze_grid.find_closest(event.x, event.y)
         self.start_end[0] = self.maze_grid.gettags(idr)[0]
         self.maze_grid.itemconfigure(idr, fill="green")
-        for idr in self.maze_grid.find_withtag("border_cell"):
-            self.maze_grid.tag_bind(idr, "<Button-1>", self.pick_end_rect_handler, False)
+        for idrx in self.maze_grid.find_withtag("border_cell"):
+            self.maze_grid.tag_bind(idrx, "<Button-1>", self.pick_end_rect_handler, False)
+        self.maze_grid.tag_unbind(idr, "<Button-1>")
 
     def pick_end_rect_handler(self, event):
         idr = self.maze_grid.find_closest(event.x, event.y)
@@ -126,8 +134,20 @@ class AppFrame(tk.Frame):
             self.maze_grid.tag_unbind(idr, "<Button-1>")
 
     def pick_pivot_rect_handler(self, event):
-        pass
-        
-# def rect_handler(event, idr=idr):
-#                     event.widget.itemconfigure(idr, fill="white")
-#                 self.maze_grid.tag_bind(idr, "<Button-1>", rect_handler)
+        idr = self.maze_grid.find_closest(event.x, event.y)
+        if len(self.pivot_cells) > 5:
+            return
+        else:
+            self.pivot_cells.append(self.maze_grid.gettags(idr)[0])
+            self.maze_grid.itemconfigure(idr, fill="red")
+            self.maze_grid.addtag_withtag("pivot", idr)
+            self.maze_grid.tag_unbind(idr, "<Button-1>")
+            self.maze_grid.tag_bind(idr, "<Button-1>", self.remove_pivot_rect_handler, False)
+
+    def remove_pivot_rect_handler(self, event):
+        idr = self.maze_grid.find_closest(event.x, event.y)
+        self.pivot_cells.remove(self.maze_grid.gettags(idr)[0])
+        self.maze_grid.dtag(idr, "pivot")
+        self.maze_grid.itemconfigure(idr, fill="blue")
+        self.maze_grid.tag_unbind(idr, "<Button-1>")
+        self.maze_grid.tag_bind(idr, "<Button-1>", self.pick_pivot_rect_handler, False)
