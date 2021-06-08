@@ -7,14 +7,20 @@
 from tkinter import *
 import tkinter as tk
 
+# NIE ODPALAMY JAKO PROGRAM
 if __name__ == "__main__":
     print("Not a program!")
     exit()
 
+# INFORMACJA DEBUGUJĄCA
 print(__name__, "imported")
 
 class AppFrame(tk.Frame):
+    """Klasa do zarządzania UI, zawiera wszystkie potrzebne pola i metody
+    do wyświetlania i obsługi generacji labiryntu"""
     def __init__(self, main, master=tk.Tk()):
+        """Konstruktor tworzący okno programu
+        oraz przygotowywujący podstawowy wygląd"""
         super().__init__(master)
         self.main = main
         self.master = master
@@ -28,12 +34,14 @@ class AppFrame(tk.Frame):
         self.start_end = [0, 0]
 
     def prepare_grid(self):
+        """Funkcja pomocnicza do przygotowania okna i layoutu"""
         self.menu = tk.Frame(width=600, height=200)
         self.maze = tk.Frame(width=600, height=600)
         self.menu.grid(row=0)
         self.maze.grid(row=1)
 
     def prepare_menu(self):
+        """Funkcja tworząca elementy UI takie jak Spinboxy oraz Przyciski"""
         self.x = IntVar(value=10)
         self.y = IntVar(value=10)
         self.xparam_label = tk.Label(
@@ -76,6 +84,8 @@ class AppFrame(tk.Frame):
         self.prepare_btn.grid(row=0, column=2, rowspan=2, sticky="e", padx=10)
 
     def prepare_maze(self, x=10, y=10):
+        """Funkcja rysuje pustą siatke labiryntu na której można
+        wybrać poszczególne punkty startu, końca oraz pośrednie."""
         line_width = 2
         size = 15+line_width
         self.maze_grid = tk.Canvas(
@@ -117,6 +127,7 @@ class AppFrame(tk.Frame):
         self.maze_grid.pack()
 
     def prepare_btn_handler(self):
+        """Handler przyscisku Przygotuj, wywołujący rysowanie nowej siatki"""
         x = int(self.xparam_entry.get())
         y = int(self.yparam_entry.get())
         self.pivot_cells = list()
@@ -124,11 +135,13 @@ class AppFrame(tk.Frame):
         self.prepare_maze(x, y)
         
     def generate_btn_handler(self):
+        """Handler przycisku Generuj, resetuje siatke i woła generator"""
         self.maze_grid.destroy()
         self.prepare_maze(self.maze_grid.x, self.maze_grid.y)
         self.main.run_generator(self.maze_grid.x, self.maze_grid.y, self.maze_grid.ids, self.pivot_cells.copy())
 
     def pick_start_rect_handler(self, event):
+        """Handler wyboru punktu startowego, następny punkt będzie końcowym"""
         idr = self.maze_grid.find_closest(event.x, event.y)
         self.start_end[0] = self.maze_grid.gettags(idr)[0]
         self.maze_grid.itemconfigure(idr, fill="green")
@@ -137,6 +150,7 @@ class AppFrame(tk.Frame):
         self.maze_grid.tag_unbind(idr, "<Button-1>")
 
     def pick_end_rect_handler(self, event):
+        """Handler punktu końcowego, więcej wybrać się nie da, reszta to pivoty"""
         idr = self.maze_grid.find_closest(event.x, event.y)
         self.start_end[1] = self.maze_grid.gettags(idr)[0]
         self.maze_grid.itemconfigure(idr, fill="orange")
@@ -144,6 +158,7 @@ class AppFrame(tk.Frame):
             self.maze_grid.tag_unbind(idr, "<Button-1>")
 
     def pick_pivot_rect_handler(self, event):
+        """Handler wybierania punktów pośrednich dla labiryntu"""
         idr = self.maze_grid.find_closest(event.x, event.y)
         if len(self.pivot_cells) > 5:
             return
@@ -155,6 +170,7 @@ class AppFrame(tk.Frame):
             self.maze_grid.tag_bind(idr, "<Button-1>", self.remove_pivot_rect_handler, False)
 
     def remove_pivot_rect_handler(self, event):
+        """Handler usuwania punktów pośrednich z labiryntu"""
         idr = self.maze_grid.find_closest(event.x, event.y)
         self.pivot_cells.remove(self.maze_grid.gettags(idr)[0])
         self.maze_grid.dtag(idr, "pivot")
@@ -163,6 +179,7 @@ class AppFrame(tk.Frame):
         self.maze_grid.tag_bind(idr, "<Button-1>", self.pick_pivot_rect_handler, False)
 
     def validate_input(self, input_val):
+        """Funckja validująca input na poziomie UI (wymiary labiryntu)"""
         try:
             if input_val.isdigit():
                 if int(input_val) in range(10, 26):
@@ -175,6 +192,7 @@ class AppFrame(tk.Frame):
             return False
     
     def restore_default(self):
+        """Funkcja resetująca wartości w przypadku podania złych wartości do pól"""
         self.x.set(10)
         self.y.set(10)
             

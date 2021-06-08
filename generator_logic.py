@@ -6,13 +6,16 @@
 
 import random
 
+# NIE ODPALAMY JAKO PROGRAM
 if __name__ == "__main__":
     print("Not a program!")
     exit()
 
+# INFORMACJA DEBUGUJĄCA
 print(__name__, "imported")
 
 class Cell:
+    """Klasa pomocnicza do przechowowyania informacji o komórkach labiryntu"""
     def __init__(self, x, y, idr, walls = ("n", "e", "s", "w")):
         self.x = x
         self.y = y
@@ -21,7 +24,9 @@ class Cell:
         self.moves = set()
 
 class Generator:
+    """Klasa Generator do generacji zadanego parametrami labiryntu"""
     def __init__(self, main, x, y, ids, start_end):
+        """Konstruktor inicjalizujący wartości generatora"""
         self.main = main
         self.x = x
         self.y = y
@@ -31,6 +36,8 @@ class Generator:
         self.directions = list()
     
     def generate(self, pivots):
+        """Funkcja pośrednia w generacji labiryntu, validuje wprowadzone dane do klasy
+        oraz upewnia się że wygenerowany labirynt spełnia wymagania."""
         if 10 > self.x or self.x > 25:
             raise ValueError("Invalid dimentions!")
         if 10 > self.y or self.y > 25:
@@ -53,6 +60,7 @@ class Generator:
                 flag2 = False
             
     def __generate(self):
+        """Wewnętrzna funkcja generująca jeden labirynt"""
         self.prepare_cells()
         stack = list()
         visited = list()
@@ -132,6 +140,7 @@ class Generator:
         self.draw_path()
             
     def prepare_cells(self):
+        """Funckja przygotowywująca elementy klasy Cell do generacji labiryntu"""
         self.cells = list()
         for i in range(self.x):
             self.cells.append(list())
@@ -151,6 +160,7 @@ class Generator:
         self.cells[self.x-1][self.y-1].walls = set(("n", "w"))
 
     def color_cell(self, current, color, direction):
+        """Zaznaczenie które elementy stają się aktualnie tunelem"""
         idr = self.cells[current[0]][current[1]].idr
         obj = self.main.ui.maze_grid.find_withtag("pivot")
         if idr not in obj:
@@ -180,11 +190,14 @@ class Generator:
         pass
 
     def draw_path(self):
+        """Funckja tworząca ścierzkę do celu w labiryncie"""
         for i in range(len(self.path) - 1):
             self.color_cell(self.path[i+1], "cyan", self.directions[i])
         pass
 
     def clear_wall(self, current, direction):
+        """Dodatkowa funkcja dla labiryntu która wywołana usuwa
+        losową ścianę w celu urozmaicenia labiryntu, może zostać pominięta"""
         line_width = 2
         size = 15+line_width
         if direction == "n":

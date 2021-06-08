@@ -74,4 +74,9 @@ def test7():
     app.ui.generate_btn.invoke()
     app.start()
 
-test7()
+# Przy odpleniu pliku z testami można wybrać który chce się uruchomić
+if __name__ == "__main__":
+    nr = int(input("Numer testu [1-7]: "))
+    lista_testow = [test1, test2, test3, test4, test5, test6, test7]
+    if nr in range(1, 8):
+        lista_testow[nr-1]()
