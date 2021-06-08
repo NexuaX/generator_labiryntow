@@ -19,6 +19,8 @@ class AppFrame(tk.Frame):
         self.main = main
         self.master = master
         self.master.title("Generator labiryntów by AM")
+        self.valid_func = self.master.register(self.validate_input)
+        self.restore_func = self.master.register(self.restore_default)
         self.pivot_cells = list()
         self.prepare_grid()
         self.prepare_menu()
@@ -32,6 +34,8 @@ class AppFrame(tk.Frame):
         self.maze.grid(row=1)
 
     def prepare_menu(self):
+        self.x = IntVar(value=10)
+        self.y = IntVar(value=10)
         self.xparam_label = tk.Label(
             master=self.menu,
             text="X SIZE:")
@@ -42,12 +46,18 @@ class AppFrame(tk.Frame):
             master=self.menu,
             from_=10,
             to=30,
-            width=3)
+            width=4,
+            textvariable=self.x)
+        self.xparam_entry.config(validate="focus", validatecommand=(self.valid_func, "%P"))
+        self.xparam_entry.config(invalidcommand=(self.restore_func))
         self.yparam_entry = tk.Spinbox(
             master=self.menu,
             from_=10,
             to=30,
-            width=3)
+            width=4,
+            textvariable=self.y)
+        self.yparam_entry.config(validate="focus", validatecommand=(self.valid_func, "%P"))
+        self.yparam_entry.config(invalidcommand=(self.restore_func))
         self.generate_btn = tk.Button(
             master=self.menu,
             text="Generate!",
@@ -151,3 +161,20 @@ class AppFrame(tk.Frame):
         self.maze_grid.itemconfigure(idr, fill="blue")
         self.maze_grid.tag_unbind(idr, "<Button-1>")
         self.maze_grid.tag_bind(idr, "<Button-1>", self.pick_pivot_rect_handler, False)
+
+    def validate_input(self, input_val):
+        try:
+            if input_val.isdigit():
+                if int(input_val) in range(10, 26):
+                    return True
+                raise ValueError("Not in range!") 
+            else:
+                raise ValueError("Not a digit!")
+        except ValueError:
+            print("Illegal value!")
+            return False
+    
+    def restore_default(self):
+        self.x.set(10)
+        self.y.set(10)
+            

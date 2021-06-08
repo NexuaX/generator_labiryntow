@@ -31,19 +31,26 @@ class Generator:
         self.directions = list()
     
     def generate(self, pivots):
+        if 10 > self.x or self.x > 25:
+            raise ValueError("Invalid dimentions!")
+        if 10 > self.y or self.y > 25:
+            raise ValueError("Invalid dimentions!")
         for index, pivot in enumerate(pivots):
             cell = tuple(pivot.split(","))
             pivots[index] = (int(cell[0]), int(cell[1]))
-        flag = True
-        while flag:
+        flag1, flag2 = True, True
+        while flag1 or flag2:
+            flag1, flag2 = True, True
             self.main.ui.maze_grid.destroy()
-            self.main.ui.prepare_maze(self.x, self.x)
+            self.main.ui.prepare_maze(self.x, self.y)
             self.__generate()
             for elem in pivots:
                 if elem not in self.path:
                     break
             else:
-                flag = False
+                flag1 = False
+            if len(self.path) > max((self.x, self.y)):
+                flag2 = False
             
     def __generate(self):
         self.prepare_cells()
@@ -88,6 +95,8 @@ class Generator:
             else:
                 stack.pop()
                 directions.pop()
+                if random.random() < 0.1:
+                    self.clear_wall(current, random.sample(walls, 1))
                 continue
             stack.append(current)
             visited.append(current)
@@ -173,6 +182,31 @@ class Generator:
     def draw_path(self):
         for i in range(len(self.path) - 1):
             self.color_cell(self.path[i+1], "cyan", self.directions[i])
+        pass
+
+    def clear_wall(self, current, direction):
+        line_width = 2
+        size = 15+line_width
+        if direction == "n":
+            self.main.ui.maze_grid.create_line(
+                current[0]*size+2*line_width, current[1]*size+size+line_width+1,
+                current[0]*size+size+line_width, current[1]*size+size+line_width+1,
+                fill="white", width=2)
+        elif direction == "s":
+            self.main.ui.maze_grid.create_line(
+                current[0]*size+2*line_width, current[1]*size+line_width+1,
+                current[0]*size+size+line_width, current[1]*size+line_width+1,
+                fill="white", width=2)
+        elif direction == "e":
+            self.main.ui.maze_grid.create_line(
+                current[0]*size+2*line_width-1, current[1]*size+2*line_width,
+                current[0]*size+2*line_width-1, current[1]*size+size+line_width,
+                fill="white", width=2)
+        elif direction == "w":
+            self.main.ui.maze_grid.create_line(
+                current[0]*size+size+2*line_width-1, current[1]*size+2*line_width,
+                current[0]*size+size+2*line_width-1, current[1]*size+size+line_width,
+                fill="white", width=2)
         pass
 
     
